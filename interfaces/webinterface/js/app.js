@@ -276,7 +276,7 @@ comparator: function(a, b) {
       //~ this.input = this.$('input');
       return this;
     },
-    pushbuttonInputValueChanged: function(event) {App.publish(this.model.get("topic")+"/on", "1");},
+    pushbuttonInputValueChanged: function(event) {App.publish(this.model.get("topic")+"/on", "1", /* retained= */ false);},
 
     // Specialized methods for type text (read-only)
     textRender: function() {

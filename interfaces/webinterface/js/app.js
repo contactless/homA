@@ -196,6 +196,7 @@ comparator: function(a, b) {
     events: {
       "click input[type=checkbox]" : "inputValueChanged",
       "change input[type=range]" : "inputValueChanged",
+      "click .button" : "inputValueChanged",
       "mousedown input[type=range]" : "inhibitInputUpdates",
       "mouseup input[type=range]" : "allowInputUpdates"
     },
@@ -214,6 +215,9 @@ comparator: function(a, b) {
         this.dynamicRender = this.switchRender;
         this.dynamicInputValueChanged = this.switchInputValueChanged;
         this.dynamicModelValueChanged = this.switchModelValueChanged;
+      } else if (this.model.get("type") == "pushbutton") {
+        this.dynamicRender = this.pushbuttonRender;
+        this.dynamicInputValueChanged = this.pushbuttonInputValueChanged;
       } else if (this.model.get("type") == "range") {
         this.dynamicRender = this.rangeRender;
         this.dynamicInputValueChanged = this.rangeInputValueChanged;
@@ -263,6 +267,16 @@ comparator: function(a, b) {
     },
     switchInputValueChanged: function(event) {App.publish(this.model.get("topic")+"/on", event.target.checked == 0 ? "0" : "1");},
     switchModelValueChanged: function(model) {this.render();},
+
+    // Specialized methods for type pushbutton
+    pushbuttonRender: function() {
+      var tmpl = this.templateByType("pushbutton");
+      this.$el.html(tmpl(_.extend(this.model.toJSON(), {checkedAttribute: this.model.get("value") == 1 ? "checked=\"true\"" : ""})));
+      this.$el.html(tmpl(this.model.toJSON()));
+      //~ this.input = this.$('input');
+      return this;
+    },
+    pushbuttonInputValueChanged: function(event) {App.publish(this.model.get("topic")+"/on", "1");},
 
     // Specialized methods for type text (read-only)
     textRender: function() {

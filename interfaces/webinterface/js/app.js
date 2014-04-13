@@ -229,6 +229,7 @@ comparator: function(a, b) {
         this.dynamicModelValueChanged = this.imageModelValueChanged;
       } else {
         this.dynamicRender = this.undefinedRender;
+        this.dynamicModelValueChanged = this.textModelValueChanged;
       }
     },
 

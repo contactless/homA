@@ -484,12 +484,16 @@ comparator: function(a, b) {
       }
      console.log("-----------/ RECEIVED-----------");
     },
-    publish: function(topic, value) {
+    publish: function(topic, value, retained /* = true */) {
       value = value != undefined ? value : "";
       console.log("Publishing " + topic+":"+value);
       var message = new Messaging.Message(value);
       message.destinationName = topic;
-      message.retained = true;
+      if (retained === undefined) {
+        message.retained = true;
+      } else {
+        message.retained = retained;
+      }
       this.mqttClient.send(message);
     },
     publishForDevice: function(deviceId, subtopic, value) {

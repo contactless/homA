@@ -47,9 +47,13 @@
     defaults: function() {return {value: 0, type: "undefined", topic: null, order: 0 };},
   });
 
+  var DeviceSettingsControl = Backbone.Model.extend({
+    defaults: function() {return {value: 0, type: "undefined", topic: null, order: 0 };},
+  });
+
   var Device = Backbone.Model.extend({
     defaults: function() {return {name: "", room: undefined };},
-    initialize: function() {this.controls = new ControlCollection;},
+    initialize: function() {this.controls = new ControlCollection; this.settings = new DeviceSettingsControlCollection;},
     hasRoom: function(){return this.get("room") != undefined && this.get("room") != null;},
     removeFromCurrentRoom: function() {
       if (this.hasRoom()) {
@@ -95,6 +99,8 @@ comparator: function(a, b) {
          :          0;
 } }
 );
+
+  var DeviceSettingsControlCollection = Backbone.Collection.extend({model: DeviceSettingsControl});
 
   var SettingsView = Backbone.View.extend({
     className: "view",
@@ -225,7 +231,7 @@ comparator: function(a, b) {
         this.dynamicInhibitInputUpdates = this.rangeInhibitInputUpdates;
         this.dynamicAllowInputUpdates = this.rangeAllowInputUpdates;
         this.dynamicAllowInputUpdates();
-      } else if (this.model.get("type") == "text") {
+      } else if ((this.model.get("type") == "text") || (this.model.get("type") == "temperature")) {
         this.dynamicRender = this.textRender;
         this.dynamicModelValueChanged = this.textModelValueChanged;
       } else if (this.model.get("type") == "image") {
@@ -307,6 +313,58 @@ comparator: function(a, b) {
     templateByType: function(type) {return _.template($("#" + type +"-control-template").html());},
  });
 
+  var DeviceSettingsControlView = Backbone.View.extend({
+    className: "subview control-view",
+    events: {
+      "change input[type=text]" : "inputValueChanged",
+    },
+    initialize: function() {
+      this.model.on('change:type', this.modelTypeChanged, this);
+      this.model.on('change:value', this.modelValueChanged, this);
+
+      this.specialize();
+      this.model.view = this;
+      this.allowInputUpdates();
+    },
+    specialize: function() {
+      this.dynamicRender = this.dynamicInhibitInputUpdates = this.dynamicAllowInputUpdates = this.dynamicModelValueChanged = this.methodNotImplemented;
+      this.dynamicInputValueChanged = this.defaultModelValueChanged;
+
+      //~ if (this.model.get("type") == "switch") {
+        this.dynamicRender = this.editableTextRender;
+        this.dynamicModelValueChanged = this.editableTextModelValueChanged;
+
+    },
+
+    // Wrapper methods
+    render: function() {return this.dynamicRender();},
+    inputValueChanged: function(e) {this.dynamicInputValueChanged(e);},
+    modelValueChanged: function(m) {this.dynamicModelValueChanged(m);},
+    modelTypeChanged: function() {this.specialize();this.render();},
+    inhibitInputUpdates: function(e) {this.dynamicInhibitInputUpdates(e);},
+    allowInputUpdates: function(e) {this.dynamicAllowInputUpdates(e);},
+
+    // Specialized methods for type range
+    editableTextRender: function() {
+      var tmpl = this.templateByType("editable-text");
+      this.$el.html(tmpl(this.model.toJSON()));
+      //~ this.input = this.$('input');
+      //~ this.input.attr('max', this.model.get("max") || 255)
+      return this;
+    },
+
+    defaultModelValueChanged: function(e) {console.log(e); this.model.set("value", e.target.value); },
+
+    editableTextModelValueChanged: function(m) {this.render();},
+
+
+    // Helper methods
+    methodNotImplemented: function() {},
+    templateByType: function(type) {return _.template($("#" + type +"-control-template").html());},
+ });
+
+
+
 
   var DeviceSettingsView = Backbone.View.extend({
     template: $("#device-settings-template").html(),
@@ -317,19 +375,42 @@ comparator: function(a, b) {
       this.model.view = this;
       _.bindAll(this, 'save');
       this.model.on('change', this.render, this);
+      this.model.settings.on('add', this.addControl, this);
+      this.model.settings.on('remove', this.render, this);
+      this.model.settings.on('sort', this.render, this);
+
     },
     render: function() {
       var tmpl = _.template(this.template);
       var roomName = this.model.hasRoom() ? this.model.get("room").get("id") : "unassigned"
       this.$el.html(tmpl(_.extend( this.model.toJSON(), {roomname: roomName})));
+
+      this.$(".device-settings-caption").hide();
+
+      for (var i = 0, l = this.model.settings.length; i < l; i++) {
+        this.addControl(this.model.settings.models[i]);
+      }
+
       this.delegateEvents();
       return this;
+    },
+    addControl: function(control) {
+      var settingView = new DeviceSettingsControlView({model: control});
+      this.$(".device-settings-caption").show();
+      this.$(".device-settings-controls").append(settingView.render().el);
     },
     save: function(e) {
       var arr = this.$el.find('form').serializeArray();
       var data = _(arr).reduce(function(acc, field){acc[field.name] = field.value;return acc;}, {});
       for(setting in data)
         App.publishForDevice(this.model.get("id"), "/meta/"+setting, data[setting]);
+
+      for (var i=0; i < this.model.settings.models.length; i++) {
+        var setting = this.model.settings.models[i];
+
+        console.log(setting);
+        App.publish(setting.get("topic"), setting.get("value"));
+      }
       Router.back();
     },
   });
@@ -419,6 +500,7 @@ comparator: function(a, b) {
       this.mqttClient.subscribe('/devices/+/controls/+/meta/+', 0);
       this.mqttClient.subscribe('/devices/+/controls/+', 0);
       this.mqttClient.subscribe('/devices/+/meta/#', 0);
+      this.mqttClient.subscribe('/sys/+/#', 0);
       window.onbeforeunload = function(){App.disconnect()};
     },
     disconnect: function() {
@@ -458,29 +540,47 @@ comparator: function(a, b) {
         Devices.add(device);
         device.moveToRoom(undefined);
       }
-      if(topic[3] == "controls") {
-        var control = device.controls.get(topic[4]);
-        if (control == null) {
-          control = new Control({id: topic[4]});
-          device.controls.add(control);
-          control.set("topic", "/devices/"+ topic[2] + "/controls/" + topic[4]);
+      if((topic[1] == "sys")) {
+        try{
+          console.log(device.settings);
+        //~ debugger;
+        var setting = device.settings.get("sys/" + topic[3]);
+        if (setting == null) {
+          setting = new DeviceSettingsControl({id: "sys/" + topic[3]});
+          device.settings.add(setting);
+          setting.set("topic", message.destinationName);
         }
-        if(topic[5] == null)                                       // Control value
-          control.set("value", payload);
-        else if (topic[5] == "meta" && topic[6] != null) {           // Control meta
+        setting.set("value", payload.toString());
+        } catch (error) {
+          console.log("err:");
+          console.log(error.stack);
 
-          if(topic[6] == "order") {                                 // Todo: move sorting to a model.on('change:order') event
-            control.set("order", parseInt(payload));
-            device.controls.sort();
-          } else {
-            control.set(topic[6], payload);
-          }
         }
-      } else if(topic[3] == "meta" ) {                             // TODO: Could be moved to the setter to facilitate parsing
-        if (topic[4] == "room")                                    // Device Room
-          device.moveToRoom(payload);
-        else if(topic[4] == "name")                                // Device name
-          device.set('name', payload);
+      } else {
+        if(topic[3] == "controls") {
+          var control = device.controls.get(topic[4]);
+          if (control == null) {
+            control = new Control({id: topic[4]});
+            device.controls.add(control);
+            control.set("topic", "/devices/"+ topic[2] + "/controls/" + topic[4]);
+          }
+          if(topic[5] == null)                                       // Control value
+            control.set("value", payload);
+          else if (topic[5] == "meta" && topic[6] != null) {           // Control meta
+
+            if(topic[6] == "order") {                                 // Todo: move sorting to a model.on('change:order') event
+              control.set("order", parseInt(payload));
+              device.controls.sort();
+            } else {
+              control.set(topic[6], payload);
+            }
+          }
+        } else if(topic[3] == "meta" ) {                             // TODO: Could be moved to the setter to facilitate parsing
+          if (topic[4] == "room")                                    // Device Room
+            device.moveToRoom(payload);
+          else if(topic[4] == "name")                                // Device name
+            device.set('name', payload);
+        }
       }
      console.log("-----------/ RECEIVED-----------");
     },

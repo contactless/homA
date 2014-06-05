@@ -127,6 +127,19 @@ h2 {
     margin-right: 25px;
     float: left;
 }
+
+
+.card .device-settings-controls h2 {
+    width: 200px;
+}
+.card .device-settings-controls input[type="text"] {
+    width: 120px;
+}
+
+
+
+
+
 .card .subviews { }/*Holds subviews (no shit sherlock) */
 .card .subview {
     line-height: 30px;
@@ -134,7 +147,7 @@ h2 {
 }
 /* CONTROLS */
 input {
-    margin: 0; padding: 0; border: 0;
+    margin: 0; padding      : 0; border: 0;
 }
 input[type="checkbox"], input[type="range"] {
     border-width: 0px 0px 2px 0px;
@@ -245,6 +258,31 @@ input[type="text"]:focus {
     border-color: rgb(20, 98, 126);
     border-top-color: transparent;
 }
+
+.pushbutton-control-button{
+    display: inline-block;
+    padding: 0 15px;
+    background: rgb(42, 140, 175);
+    color: #fff;
+    border-radius: 2px;
+    border-color: rgb(42, 140, 175);
+    border-width: 3px 1px 3px 1px;
+    border-top-color: transparent;
+    border-style: solid;
+    cursor: pointer;
+    transition: all .25s ease-in-out;
+   -moz-transition: all .25s ease-in-out;
+   -webkit-transition: all .25s ease-in-out;
+   min-width: 100px;
+   text-align: center;
+}
+.pushbutton-control-button:hover{
+    border-color: rgb(20, 98, 126);
+    border-top-color: transparent;
+}
+
+
+
 #connectivity {
     transition: opacity .5s ease-in-out;
     position: absolute;

@@ -580,6 +580,28 @@ comparator: function(a, b) {
             device.moveToRoom(payload);
           else if(topic[4] == "name")                                // Device name
             device.set('name', payload);
+          else {
+            try{
+              console.log(device.settings);
+            //~ debugger;
+            var setting = device.settings.get("sys/" + topic[4]);
+            if (setting == null) {
+              setting = new DeviceSettingsControl({id: "sys/" + topic[4]});
+              device.settings.add(setting);
+              setting.set("topic", message.destinationName);
+            }
+            setting.set("value", payload.toString());
+            } catch (error) {
+              console.log("err:");
+              console.log(error.stack);
+            }
+          }
+
+
+
+
+
+
         }
       }
      console.log("-----------/ RECEIVED-----------");

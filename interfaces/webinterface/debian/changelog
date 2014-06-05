@@ -1,0 +1,13 @@
+wb-homa-webinterface (1.01) stable; urgency=medium
+
+  * minor changes in settings handling 
+
+ -- Evgeny Boger <boger@contactless.ru>  Thu, 05 Jun 2014 23:17:27 +0400
+
+wb-homa-webinterface (1.0) wheezy; urgency=low
+
+  * Initial debianization
+
+ -- Evgeny Boger <boger@contactless.ru>  Mon, 26 May 2014 01:59:04 +0400
+
+

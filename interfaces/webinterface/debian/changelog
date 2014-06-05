@@ -1,3 +1,9 @@
+wb-homa-webinterface (1.02) stable; urgency=medium
+
+  * make commands non-retained
+
+ -- Evgeny Boger <boger@contactless.ru>  Fri, 06 Jun 2014 02:03:55 +0400
+
 wb-homa-webinterface (1.01) stable; urgency=medium
 
   * minor changes in settings handling 

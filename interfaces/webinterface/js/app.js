@@ -261,7 +261,7 @@ comparator: function(a, b) {
     },
     rangeInhibitInputUpdates: function(e) {this.allowUpdates = false;},
     rangeAllowInputUpdates: function(e) {this.allowUpdates = true;},
-    rangeInputValueChanged: function(e) {App.publish(this.model.get("topic")+"/on", e.target.value);},
+    rangeInputValueChanged: function(e) {App.publish(this.model.get("topic")+"/on", e.target.value, false);},
     rangeModelValueChanged: function(m) {if (this.allowUpdates) this.render();},
 
     // Specialized methods for type switch
@@ -271,7 +271,7 @@ comparator: function(a, b) {
       this.input = this.$('input');
       return this;
     },
-    switchInputValueChanged: function(event) {App.publish(this.model.get("topic")+"/on", event.target.checked == 0 ? "0" : "1");},
+    switchInputValueChanged: function(event) {App.publish(this.model.get("topic")+"/on", event.target.checked == 0 ? "0" : "1", false);},
     switchModelValueChanged: function(model) {this.render();},
 
     // Specialized methods for type pushbutton

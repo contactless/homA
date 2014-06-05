@@ -2,7 +2,7 @@
 set -e
 
 if [ "$1" = "purge" ] ; then
-    ;
+    echo $1;
 fi
 
 #DEBHELPER#

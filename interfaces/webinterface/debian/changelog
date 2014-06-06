@@ -1,3 +1,9 @@
+wb-homa-webinterface (1.03) stable; urgency=medium
+
+  * fix pushbuttons
+
+ -- Evgeny Boger <boger@contactless.ru>  Fri, 06 Jun 2014 04:59:56 +0400
+
 wb-homa-webinterface (1.02) stable; urgency=medium
 
   * make commands non-retained

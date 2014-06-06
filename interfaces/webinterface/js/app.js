@@ -202,7 +202,7 @@ comparator: function(a, b) {
     events: {
       "click input[type=checkbox]" : "inputValueChanged",
       "change input[type=range]" : "inputValueChanged",
-      "click .button" : "inputValueChanged",
+      "click .pushbutton-control-button" : "inputValueChanged",
       "mousedown input[type=range]" : "inhibitInputUpdates",
       "mouseup input[type=range]" : "allowInputUpdates"
     },

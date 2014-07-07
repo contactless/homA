@@ -231,7 +231,7 @@ comparator: function(a, b) {
         this.dynamicInhibitInputUpdates = this.rangeInhibitInputUpdates;
         this.dynamicAllowInputUpdates = this.rangeAllowInputUpdates;
         this.dynamicAllowInputUpdates();
-      } else if ((this.model.get("type") == "text") || (this.model.get("type") == "temperature")) {
+      } else if ((this.model.get("type") == "text") || (this.model.get("type") == "temperature")  || (this.model.get("type") == "rel_humidity")) {
         this.dynamicRender = this.textRender;
         this.dynamicModelValueChanged = this.textModelValueChanged;
       } else if (this.model.get("type") == "image") {

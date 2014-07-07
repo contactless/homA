@@ -1,3 +1,9 @@
+wb-homa-webinterface (1.04) stable; urgency=medium
+
+  * rel_humidity
+
+ -- Evgeny Boger <boger@contactless.ru>  Mon, 07 Jul 2014 22:34:12 +0400
+
 wb-homa-webinterface (1.03) stable; urgency=medium
 
   * fix pushbuttons

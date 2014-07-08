@@ -102,9 +102,19 @@
             <div class="subviews device-settings-controls">
             </div>
 
+
             <div class="subview">
               <div class="button save">Save</div>
             </div>
+
+            <br/>
+            <div class="subview device-controls-visibility-caption">
+                <h1>Enable/disable controls:</h1>
+            </div>
+
+            <div class="subviews device-controls-visibility-controls">
+            </div>
+
           </form>
         </div>
       </div>
@@ -155,6 +165,9 @@
       <div class="editableTextWrapper">
         <input type="text" value="<%= value %>" />
       </div>
+    </script>
+    <script id="hidden-control-template" type="text/template">
+      <!-- Id: <%= id %> , Type: <%= type %>, Value: <%= value %> -->
     </script>
 
     <script src="js/paho.js" type="text/javascript"></script>

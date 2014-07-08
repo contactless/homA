@@ -1,3 +1,9 @@
+wb-homa-webinterface (1.05) stable; urgency=medium
+
+  * Allow to show/hide controls 
+
+ -- Evgeny Boger <boger@contactless.ru>  Tue, 08 Jul 2014 20:24:00 +0400
+
 wb-homa-webinterface (1.04) stable; urgency=medium
 
   * rel_humidity

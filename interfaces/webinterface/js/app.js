@@ -208,6 +208,7 @@ comparator: function(a, b) {
     },
     initialize: function() {
       this.model.on('change:type', this.modelTypeChanged, this);
+      this.model.on('change:hidden', this.modelTypeChanged, this);
       this.model.on('change:value', this.modelValueChanged, this);
 
       this.specialize();
@@ -217,29 +218,34 @@ comparator: function(a, b) {
     specialize: function() {
       this.dynamicInputValueChanged = this.dynamicRender = this.dynamicInhibitInputUpdates = this.dynamicAllowInputUpdates = this.dynamicModelValueChanged = this.methodNotImplemented;
 
-      if (this.model.get("type") == "switch") {
-        this.dynamicRender = this.switchRender;
-        this.dynamicInputValueChanged = this.switchInputValueChanged;
-        this.dynamicModelValueChanged = this.switchModelValueChanged;
-      } else if (this.model.get("type") == "pushbutton") {
-        this.dynamicRender = this.pushbuttonRender;
-        this.dynamicInputValueChanged = this.pushbuttonInputValueChanged;
-      } else if (this.model.get("type") == "range") {
-        this.dynamicRender = this.rangeRender;
-        this.dynamicInputValueChanged = this.rangeInputValueChanged;
-        this.dynamicModelValueChanged = this.rangeModelValueChanged;
-        this.dynamicInhibitInputUpdates = this.rangeInhibitInputUpdates;
-        this.dynamicAllowInputUpdates = this.rangeAllowInputUpdates;
-        this.dynamicAllowInputUpdates();
-      } else if ((this.model.get("type") == "text") || (this.model.get("type") == "temperature")  || (this.model.get("type") == "rel_humidity")) {
-        this.dynamicRender = this.textRender;
-        this.dynamicModelValueChanged = this.textModelValueChanged;
-      } else if (this.model.get("type") == "image") {
-        this.dynamicRender = this.imageRender;
-        this.dynamicModelValueChanged = this.imageModelValueChanged;
+      if (this.model.get("hidden") == "1") {
+        this.dynamicRender = this.hiddenRender
       } else {
-        this.dynamicRender = this.undefinedRender;
-        this.dynamicModelValueChanged = this.textModelValueChanged;
+
+        if (this.model.get("type") == "switch") {
+          this.dynamicRender = this.switchRender;
+          this.dynamicInputValueChanged = this.switchInputValueChanged;
+          this.dynamicModelValueChanged = this.switchModelValueChanged;
+        } else if (this.model.get("type") == "pushbutton") {
+          this.dynamicRender = this.pushbuttonRender;
+          this.dynamicInputValueChanged = this.pushbuttonInputValueChanged;
+        } else if (this.model.get("type") == "range") {
+          this.dynamicRender = this.rangeRender;
+          this.dynamicInputValueChanged = this.rangeInputValueChanged;
+          this.dynamicModelValueChanged = this.rangeModelValueChanged;
+          this.dynamicInhibitInputUpdates = this.rangeInhibitInputUpdates;
+          this.dynamicAllowInputUpdates = this.rangeAllowInputUpdates;
+          this.dynamicAllowInputUpdates();
+        } else if ((this.model.get("type") == "text") || (this.model.get("type") == "temperature")  || (this.model.get("type") == "rel_humidity")) {
+          this.dynamicRender = this.textRender;
+          this.dynamicModelValueChanged = this.textModelValueChanged;
+        } else if (this.model.get("type") == "image") {
+          this.dynamicRender = this.imageRender;
+          this.dynamicModelValueChanged = this.imageModelValueChanged;
+        } else {
+          this.dynamicRender = this.undefinedRender;
+          this.dynamicModelValueChanged = this.textModelValueChanged;
+        }
       }
     },
 
@@ -308,6 +314,13 @@ comparator: function(a, b) {
       return this;
     },
 
+    // Specialized methods for hidden control
+    hiddenRender: function() {
+      var tmpl = this.templateByType("hidden");
+      this.$el.html(tmpl(this.model.toJSON()));
+      return this;
+    },
+
     // Helper methods
     methodNotImplemented: function() {},
     templateByType: function(type) {return _.template($("#" + type +"-control-template").html());},
@@ -364,6 +377,37 @@ comparator: function(a, b) {
  });
 
 
+  var DeviceSettingsControlVisibilityView = Backbone.View.extend({
+    className: "subview control-view",
+    events: {
+      "click input[type=checkbox]" : "inputValueChanged",
+    },
+    initialize: function() {
+      this.model.on('change:hidden', this.modelVisibilityChanged, this);
+      this.model.view = this;
+    },
+
+    // Wrapper methods
+    render: function() {return this.dynamicRender();},
+
+    // Specialized methods for type switch
+    render: function() {
+      var tmpl = this.templateByType("switch");
+      this.$el.html(tmpl(_.extend(this.model.toJSON(), {checkedAttribute: this.model.get("hidden") == 1 ? "" : "checked=\"true\""})));
+      this.input = this.$('input');
+      return this;
+    },
+    inputValueChanged: function(event) {App.publish(this.model.get("topic")+"/meta/hidden", event.target.checked == 0 ? "1" : "", true);},
+    controlVisibilityChanged: function(model) {this.render();},
+
+
+
+
+    // Helper methods
+    methodNotImplemented: function() {},
+    templateByType: function(type) {return _.template($("#" + type +"-control-template").html());},
+ });
+
 
 
   var DeviceSettingsView = Backbone.View.extend({
@@ -375,9 +419,11 @@ comparator: function(a, b) {
       this.model.view = this;
       _.bindAll(this, 'save');
       this.model.on('change', this.render, this);
-      this.model.settings.on('add', this.addControl, this);
+      this.model.settings.on('add', this.addSetting, this);
       this.model.settings.on('remove', this.render, this);
       this.model.settings.on('sort', this.render, this);
+
+      this.model.controls.on('add', this.addControl, this);
 
     },
     render: function() {
@@ -388,17 +434,47 @@ comparator: function(a, b) {
       this.$(".device-settings-caption").hide();
 
       for (var i = 0, l = this.model.settings.length; i < l; i++) {
-        this.addControl(this.model.settings.models[i]);
+        this.addSetting(this.model.settings.models[i]);
       }
 
+      for (var i = 0, l = this.model.controls.length; i < l; i++) {
+        this.addControl(this.model.controls.models[i]);
+      }
+
+
       this.delegateEvents();
+
+        console.log(    "models:");
       return this;
     },
-    addControl: function(control) {
+
+    addSetting: function(control) {
       var settingView = new DeviceSettingsControlView({model: control});
       this.$(".device-settings-caption").show();
       this.$(".device-settings-controls").append(settingView.render().el);
     },
+
+    addControl: function(control) {
+      console.log("addcontrol");
+      console.log(control);
+      //~ debugger;
+
+      try {
+      var controlVisibilityView = new DeviceSettingsControlVisibilityView({model: control});;
+      } catch (e) {
+        console.log("======================ERROR=============");
+        console.log(e.stack);
+
+
+      }
+
+      this.$(".device-controls-visibility-caption").show();
+      this.$(".device-controls-visibility-controls").append(controlVisibilityView.render().el);
+
+    },
+
+
+
     save: function(e) {
       var arr = this.$el.find('form').serializeArray();
       var data = _(arr).reduce(function(acc, field){acc[field.name] = field.value;return acc;}, {});

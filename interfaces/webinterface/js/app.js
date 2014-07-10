@@ -209,6 +209,7 @@ comparator: function(a, b) {
     initialize: function() {
       this.model.on('change:type', this.modelTypeChanged, this);
       this.model.on('change:hidden', this.modelTypeChanged, this);
+      this.model.on('change:readonly', this.modelTypeChanged, this);
       this.model.on('change:value', this.modelValueChanged, this);
 
       this.specialize();
@@ -262,7 +263,12 @@ comparator: function(a, b) {
       var tmpl = this.templateByType("range");
       this.$el.html(tmpl(this.model.toJSON()));
       this.input = this.$('input');
-      this.input.attr('max', this.model.get("max") || 255)
+      this.input.attr('max', this.model.get("max") || 255);
+
+      if (this.model.get("readonly")) {
+        this.input.attr('disabled', '');
+      }
+
       return this;
     },
     rangeInhibitInputUpdates: function(e) {this.allowUpdates = false;},
@@ -275,6 +281,11 @@ comparator: function(a, b) {
       var tmpl = this.templateByType("switch");
       this.$el.html(tmpl(_.extend(this.model.toJSON(), {checkedAttribute: this.model.get("value") == 1 ? "checked=\"true\"" : ""})));
       this.input = this.$('input');
+
+      if (this.model.get("readonly")) {
+        this.input.attr('disabled', '');
+      }
+
       return this;
     },
     switchInputValueChanged: function(event) {App.publish(this.model.get("topic")+"/on", event.target.checked == 0 ? "0" : "1", false);},
@@ -285,7 +296,12 @@ comparator: function(a, b) {
       var tmpl = this.templateByType("pushbutton");
       this.$el.html(tmpl(_.extend(this.model.toJSON(), {checkedAttribute: this.model.get("value") == 1 ? "checked=\"true\"" : ""})));
       this.$el.html(tmpl(this.model.toJSON()));
-      //~ this.input = this.$('input');
+      this.input = this.$('input');
+
+      if (this.model.get("readonly")) {
+        this.input.attr('disabled', '');
+      }
+
       return this;
     },
     pushbuttonInputValueChanged: function(event) {App.publish(this.model.get("topic")+"/on", "1", /* retained= */ false);},
@@ -660,9 +676,9 @@ comparator: function(a, b) {
             try{
               console.log(device.settings);
             //~ debugger;
-            var setting = device.settings.get("sys/" + topic[4]);
+            var setting = device.settings.get(topic[4]);
             if (setting == null) {
-              setting = new DeviceSettingsControl({id: "sys/" + topic[4]});
+              setting = new DeviceSettingsControl({id: topic[4]});
               device.settings.add(setting);
               setting.set("topic", message.destinationName);
             }

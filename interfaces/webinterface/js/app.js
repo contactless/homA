@@ -52,7 +52,7 @@
   });
 
   var Device = Backbone.Model.extend({
-    defaults: function() {return {name: "", room: undefined };},
+    defaults: function() {return {name: "", room: undefined, hidden: "0" };},
     initialize: function() {this.controls = new ControlCollection; this.settings = new DeviceSettingsControlCollection;},
     hasRoom: function(){return this.get("room") != undefined && this.get("room") != null;},
     removeFromCurrentRoom: function() {
@@ -116,8 +116,26 @@ comparator: function(a, b) {
     render: function () {
         var tmpl = _.template(this.template);
         this.$el.html(tmpl(this.model.toJSON()));
+        for (var i = 0, l = Devices.length; i < l; i++){
+          device = Devices.models[i];
+          this.addDevice(device);
+        }
         return this;
     },
+    
+    addDevice: function(device) {
+      console.log("adddevice");
+      console.log(device);
+      //~ debugger;
+
+      var deviceVisibilityView = new SettingsDeviceVisibilityView({model: device});
+    
+
+      this.$(".device-visibility-caption").show();
+      this.$(".device-visibility-controls").append(deviceVisibilityView.render().el);
+
+    },
+    
     save: function(e) {
       var arr = this.$el.find('form').serializeArray();
       var data = _(arr).reduce(function(acc, field){acc[field.name] = field.value;return acc;}, {});
@@ -182,16 +200,25 @@ comparator: function(a, b) {
         this.model.roomLink.$el.addClass("active");
     },
     render: function () {
-      for (var i = 0, l = this.collection.length; i < l; i++)
-          this.addDevice(this.collection.models[i]);
+      this.$el.empty()
+      for (var i = 0, l = this.collection.length; i < l; i++){
+        device = this.collection.models[i];
+        if (device.get("hidden") == "0") {
+          this.addDevice(device);
+        }
+      }
       return this;
     },
     addDevice: function(device) {
       var deviceView = new DeviceView({model: device});
-      var renderedDeviceView = deviceView.render()
+      var renderedDeviceView = deviceView.render();
+           
       this.$el.append(renderedDeviceView.el);
+      
       renderedDeviceView.$el.resize(this.layoutCards);
-      this.layoutCards();
+      this.layoutCards();   
+      
+      this.listenTo(device, 'change:hidden', this.render);   
     },
     removeDevice: function(device) {device.view.close();},
     removeSelf: function(room) {Backbone.history.loadUrl( "rooms/"+room.get("id") )}
@@ -424,13 +451,44 @@ comparator: function(a, b) {
     templateByType: function(type) {return _.template($("#" + type +"-control-template").html());},
  });
 
+  var SettingsDeviceVisibilityView = Backbone.View.extend({
+    className: "subview control-view",
+    events: {
+      "click input[type=checkbox]" : "inputValueChanged",
+    },
+    initialize: function() {
+      this.model.on('change:hidden', this.modelVisibilityChanged, this);
+      this.model.view = this;
+    },
+
+    // Wrapper methods
+    render: function() {return this.dynamicRender();},
+
+    // Specialized methods for type switch
+    render: function() {
+      var tmpl = _.template($("#switch-control-template").html());;
+      this.$el.html(tmpl(_.extend(this.model.toJSON(), {checkedAttribute: this.model.get("hidden") == "0" ? "" : "checked=\"true\""})));
+      this.input = this.$('input');
+      return this;
+    },
+    inputValueChanged: function(event) {App.publishForDevice(this.model.get("id"), "/meta/hidden", event.target.checked == 0 ? "0" : "1", true);},
+    deviceVisibilityChanged: function(model) {this.render();},
+
+
+
+
+    // Helper methods
+    //~ methodNotImplemented: function() {},
+    //~ templateByType: function(type) {return _.template($("#" + type +"-control-template").html());},
+ });
 
 
   var DeviceSettingsView = Backbone.View.extend({
     template: $("#device-settings-template").html(),
     id: "device-settings-view",
     className: "view",
-    events: {"click .button.save":  "save",},
+    events: {"click .button.save":  "save",
+             "click input[type=checkbox]" : "inputValueChanged"},
     initialize: function() {
       this.model.view = this;
       _.bindAll(this, 'save');
@@ -445,7 +503,7 @@ comparator: function(a, b) {
     render: function() {
       var tmpl = _.template(this.template);
       var roomName = this.model.hasRoom() ? this.model.get("room").get("id") : "unassigned"
-      this.$el.html(tmpl(_.extend( this.model.toJSON(), {roomname: roomName})));
+      this.$el.html(tmpl(_.extend( this.model.toJSON(), {roomname: roomName, checkedAttribute: this.model.get("hidden") == "1" ? "checked=\"true\"" : ""})));
 
       this.$(".device-settings-caption").hide();
 
@@ -489,6 +547,7 @@ comparator: function(a, b) {
 
     },
 
+    inputValueChanged: function(event) {App.publishForDevice(this.model.get("id"), "/meta/hidden", event.target.checked == 0 ? "0" : "1", true);},
 
 
     save: function(e) {
@@ -496,7 +555,7 @@ comparator: function(a, b) {
       var data = _(arr).reduce(function(acc, field){acc[field.name] = field.value;return acc;}, {});
       for(setting in data)
         App.publishForDevice(this.model.get("id"), "/meta/"+setting, data[setting]);
-
+        
       for (var i=0; i < this.model.settings.models.length; i++) {
         var setting = this.model.settings.models[i];
 
@@ -522,13 +581,14 @@ comparator: function(a, b) {
       var tmpl = _.template(this.template);
       this.$el.html(tmpl(this.model.toJSON()));
       for (var i = 0, l = this.model.controls.length; i < l; i++)
-        this.addControl(this.model.controls.models[i]);
+        this.addControl(this.model.controls.models[i]);      
       return this;
     },
     addControl: function(control) {
       var controlView = new ControlView({model: control});
       this.$(".subviews").append(controlView.render().el);
     },
+        
   });
 
   /* BASE APPLICATION LOGIC & MQTT EVENT HANDLING */
@@ -672,6 +732,8 @@ comparator: function(a, b) {
             device.moveToRoom(payload);
           else if(topic[4] == "name")                                // Device name
             device.set('name', payload);
+          else if(topic[4] == "hidden")
+            device.set('hidden', payload);
           else {
             try{
               console.log(device.settings);

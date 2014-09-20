@@ -129,7 +129,7 @@ h2 {
 .card h2 { /* Subview title */
     display: inline-block;
     overflow: hidden;
-    width: 100px;
+    width: 105px;
     margin-right: 25px;
     float: left;
 }

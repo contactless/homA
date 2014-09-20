@@ -44,8 +44,17 @@
               <div class="button save">Save</div>
             </div>
           </form>
+            <div class="subview device-visibility-caption">
+                <h1>Show/hide devices:</h1>
+            </div>
+
+            <div class="subviews device-visibility-controls">
+
+            </div>
         </div>
       </div>
+      
+      
     </script>
 
     <script id="room-link-template" type="text/template">
@@ -58,17 +67,17 @@
     <script id="view-placeholder-template" type="text/template">
     <div id="placeholder"></div>
     </script>
-
+    
     <script id="device-template" type="text/template">
       <h1>
         <a href="#/devices/<%= id %>/settings">
-          <%= name || id %>
+          <%= name || id %> 
         </a>
       </h1>
       <div class="subviews">
       </div>
     </script>
-
+    
     <script id="device-settings-template" type="text/template">
       <div class="card">
         <h1>
@@ -94,7 +103,7 @@
               </h2>
               <input type="text" value="<%= roomname %>" placeholder="unassigned" name="room"/>
             </div>
-
+            
             <div class="subview device-settings-caption">
                 <h1>Settings:</h1>
             </div>
@@ -106,8 +115,15 @@
             <div class="subview">
               <div class="button save">Save</div>
             </div>
-
+            
             <br/>
+            <div class="subview">
+              <h2>
+                Hide device
+              </h2>
+              <input type="checkbox" id="hidden-device" <%= checkedAttribute %>/>
+            </div>
+            
             <div class="subview device-controls-visibility-caption">
                 <h1>Show/hide controls:</h1>
             </div>

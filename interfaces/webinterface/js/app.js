@@ -203,7 +203,7 @@ comparator: function(a, b) {
       this.$el.empty()
       for (var i = 0, l = this.collection.length; i < l; i++){
         device = this.collection.models[i];
-        if (device.get("hidden") == "0") {
+        if (device.get("hidden") != "1") {
           this.addDevice(device);
         }
       }
@@ -467,7 +467,7 @@ comparator: function(a, b) {
     // Specialized methods for type switch
     render: function() {
       var tmpl = _.template($("#switch-control-template").html());;
-      this.$el.html(tmpl(_.extend(this.model.toJSON(), {checkedAttribute: this.model.get("hidden") == "0" ? "" : "checked=\"true\""})));
+      this.$el.html(tmpl(_.extend(this.model.toJSON(), {checkedAttribute: this.model.get("hidden") != "1" ? "" : "checked=\"true\""})));
       this.input = this.$('input');
       return this;
     },

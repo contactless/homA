@@ -196,6 +196,7 @@ input[type="checkbox"]:checked:after {
     display: inline-block;
     overflow: hidden;
     padding: 0;
+    float: right;
 }
 .rangeWrapper, input[type="range"], input[type="range"]::-webkit-slider-thumb::before {
     width: 250px;

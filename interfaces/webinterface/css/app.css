@@ -129,9 +129,11 @@ h2 {
 .card h2 { /* Subview title */
     display: inline-block;
     overflow: hidden;
-    width: 105px;
+    min-width: 100px;
+    max-width: 290px;
     margin-right: 25px;
     float: left;
+    clear: left;
 }
 
 
@@ -149,10 +151,12 @@ h2 {
 .card .subview {
     line-height: 30px;
     margin-bottom: 5px;
+    overflow: hidden;
 }
 /* CONTROLS */
 input {
     margin: 0; padding      : 0; border: 0;
+    float: right;
 }
 input[type="checkbox"], input[type="range"] {
     border-width: 0px 0px 2px 0px;

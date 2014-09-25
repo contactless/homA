@@ -202,6 +202,7 @@ comparator: function(a, b) {
     events: {
       "click input[type=checkbox]" : "inputValueChanged",
       "change input[type=range]" : "inputValueChanged",
+      "change input.color" : "inputValueChanged",
       "click .pushbutton-control-button" : "inputValueChanged",
       "mousedown input[type=range]" : "inhibitInputUpdates",
       "mouseup input[type=range]" : "allowInputUpdates"
@@ -243,6 +244,10 @@ comparator: function(a, b) {
         } else if (this.model.get("type") == "image") {
           this.dynamicRender = this.imageRender;
           this.dynamicModelValueChanged = this.imageModelValueChanged;
+        } else if (this.model.get("type") == "rgb") {
+          this.dynamicRender = this.rgbRender;
+          this.dynamicModelValueChanged = this.rgbModelValueChanged;
+          this.dynamicInputValueChanged = this.rgbInputValueChanged;
         } else {
           this.dynamicRender = this.undefinedRender;
           this.dynamicModelValueChanged = this.textModelValueChanged;
@@ -322,6 +327,28 @@ comparator: function(a, b) {
     },
     imageModelValueChanged: function(model) {this.render();},
 
+
+    rgbValue: function() {
+      var value = this.model.get("value") || "0;0;0";
+      return "rgb(" + value.replace(/;/g, ",") + ")";
+    },
+    rgbRender: function() {
+      var tmpl = this.templateByType("rgb"),
+          data = this.model.toJSON();
+      data.rgb = this.rgbValue();
+      this.$el.html(tmpl(data)).find("input").spectrum({
+        showPalette: true,
+        localStorageKey: "rgb_palette"
+      });
+      return this;
+    },
+    rgbModelValueChanged: function(model) {
+      this.$el.find("input").spectrum("set", this.rgbValue());
+    },
+    rgbInputValueChanged: function(e) {
+      var rgb = $(e.target).spectrum("get").toRgb();
+      App.publish(this.model.get("topic")+"/on", [rgb.r, rgb.g, rgb.b].join(";"), false);
+    },
 
     // Specialized methods for type undefined
     undefinedRender: function() {

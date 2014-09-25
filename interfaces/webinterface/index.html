@@ -19,7 +19,12 @@
     </div>
 
     <div id="templates">
-
+    <script id="switch-device-visibility-template" type="text/template">
+      <h2>
+        <%= name || id %>
+      </h2>
+      <input type="checkbox" <%= checkedAttribute %>/>
+    </script>
     <script id="settings-template" type="text/template">
       <div class="card">
         <h1>
@@ -45,7 +50,7 @@
             </div>
           </form>
             <div class="subview device-visibility-caption">
-                <h1>Show/hide devices:</h1>
+                <h1>Hide devices:</h1>
             </div>
 
             <div class="subviews device-visibility-controls">
@@ -121,7 +126,7 @@
               <h2>
                 Hide device
               </h2>
-              <input type="checkbox" id="hidden-device" <%= checkedAttribute %>/>
+              <input type="checkbox" class="hidden-device" <%= checkedAttribute %>/>
             </div>
             
             <div class="subview device-controls-visibility-caption">

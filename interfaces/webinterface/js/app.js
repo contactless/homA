@@ -466,7 +466,7 @@ comparator: function(a, b) {
 
     // Specialized methods for type switch
     render: function() {
-      var tmpl = _.template($("#switch-control-template").html());;
+      var tmpl = _.template($("#switch-device-visibility-template").html());;
       this.$el.html(tmpl(_.extend(this.model.toJSON(), {checkedAttribute: this.model.get("hidden") != "1" ? "" : "checked=\"true\""})));
       this.input = this.$('input');
       return this;
@@ -488,7 +488,7 @@ comparator: function(a, b) {
     id: "device-settings-view",
     className: "view",
     events: {"click .button.save":  "save",
-             "click input[type=checkbox]" : "inputValueChanged"},
+             "click .hidden-device" : "inputValueChanged"},
     initialize: function() {
       this.model.view = this;
       _.bindAll(this, 'save');

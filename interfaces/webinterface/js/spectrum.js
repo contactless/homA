@@ -845,6 +845,7 @@
             if (fireCallback && hasChanged) {
                 callbacks.change(color);
                 boundElement.trigger('change', [ color ]);
+                colorOnShow = color;
             }
         }
 

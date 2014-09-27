@@ -336,16 +336,27 @@ comparator: function(a, b) {
       var tmpl = this.templateByType("rgb"),
           data = this.model.toJSON();
       data.rgb = this.rgbValue();
+      // avoid changing spectrum control value when the user
+      // is choosing color
+      var canUpdateFromMQTT = true;
       this.$el.html(tmpl(data)).find("input").spectrum({
         showPalette: true,
         localStorageKey: "rgb_palette"
+      }).on("show.spectrum, hide.spectrum", function () {
+        canUpdateFromMQTT = true;
+      }).on("homA.setValue", function (e) {
+        if (canUpdateFromMQTT)
+          $(this).spectrum("set", e.data);
+      }).on("homA.changedByUser", function () {
+        canUpdateFromMQTT = false;
       });
       return this;
     },
     rgbModelValueChanged: function(model) {
-      this.$el.find("input").spectrum("set", this.rgbValue());
+      this.$el.find("input").trigger("homa.setValue", this.rgbValue());
     },
     rgbInputValueChanged: function(e) {
+      $(e.target).trigger("homA.changedByUser");
       var rgb = $(e.target).spectrum("get").toRgb();
       App.publish(this.model.get("topic")+"/on", [rgb.r, rgb.g, rgb.b].join(";"), false);
     },

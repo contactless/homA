@@ -231,7 +231,8 @@ comparator: function(a, b) {
         } else if (this.model.get("type") == "pushbutton") {
           this.dynamicRender = this.pushbuttonRender;
           this.dynamicInputValueChanged = this.pushbuttonInputValueChanged;
-        } else if (this.model.get("type") == "range") {
+        } else if (this.model.get("type") == "range" ||
+                   this.model.get("type") == "dimmer") {
           this.dynamicRender = this.rangeRender;
           this.dynamicInputValueChanged = this.rangeInputValueChanged;
           this.dynamicModelValueChanged = this.rangeModelValueChanged;

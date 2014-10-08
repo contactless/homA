@@ -344,16 +344,16 @@ comparator: function(a, b) {
         localStorageKey: "rgb_palette"
       }).on("show.spectrum, hide.spectrum", function () {
         canUpdateFromMQTT = true;
-      }).on("homA.setValue", function (e) {
+      }).on("homA.setValue", function (e, rgbValue) {
         if (canUpdateFromMQTT)
-          $(this).spectrum("set", e.data);
+          $(this).spectrum("set", rgbValue);
       }).on("homA.changedByUser", function () {
         canUpdateFromMQTT = false;
       });
       return this;
     },
     rgbModelValueChanged: function(model) {
-      this.$el.find("input").trigger("homa.setValue", this.rgbValue());
+      this.$el.find("input").trigger("homA.setValue", this.rgbValue());
     },
     rgbInputValueChanged: function(e) {
       $(e.target).trigger("homA.changedByUser");

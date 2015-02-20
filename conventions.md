@@ -39,5 +39,7 @@ A read-only control for a certain type of value.
 | Relative humidity  	| rel_humidity| %, RH  	| float, 0 - 100  	|   	|
 | Atmospheric pressure  	| atmospheric_pressure | millibar (100 Pa)  	| float  	|   	|
 | Relative humidity  	| rel_humidity| %, RH  	| float, 0 - 100  	|   	|
-|Precipitation rate (rainfall rate) | rainfall | mm per hour | float | |
-|Wind speed |  wind_speed | m/s | float | |
+| Precipitation rate (rainfall rate) | rainfall | mm per hour | float | |
+| Wind speed |  wind_speed | m/s | float | |
+| Power |  power | watt | float | |
+| Power consumption |  power_consumption | kWh | float | |

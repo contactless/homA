@@ -58,3 +58,5 @@ A read-only control for a certain type of value.
 | Power |  power | watt | float | |
 | Power consumption |  power_consumption | kWh | float | |
 | Voltage |  voltage | volts | float | |
+| Water flow | water_flow | m^3 / hour | float ||
+| Water total consumption | water_consumption | m^3  | float ||
